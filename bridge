@@ -1,8 +1,8 @@
 #!/bin/bash
-
 pid=0
-filestart="/home/pi/node-flower-bridge/start.js"
-filetest="/home/pi/node-flower-bridge/test.js"
+absolutepath="$( cd $(dirname $0) ; pwd -P )"
+filestart="$absolutepath/start.js"
+filetest="$absolutepath/test.js"
 
 usage () {
 	echo "Flower Bridge: See Flowers fall on the bridge"
@@ -48,7 +48,7 @@ pidexist () {
 # 1 -> stoping
 # 2 -> waiting
 isrunning () {
-	pid=$(head -n 1 "/home/pi/node-flower-bridge/.flowerIsRunning" 2> /dev/null)
+	pid=$(head -n 1 "$absolutepath/.flowerIsRunning" 2> /dev/null)
 	if [ -z "$pid" ]
 	then
 		echo "[---] No program is running"
@@ -98,16 +98,16 @@ backgroundit () {
 	status="$?"
 	if [ "$status" == 1 ]
 	then
-		node $1 $2 2> /home/pi/node-flower-bridge/trace.log 1> /dev/null &
-		echo $! > "/home/pi/node-flower-bridge/.flowerIsRunning"
+		node $1 $2 2> $absolutepath/trace.log 1> /dev/null &
+		echo $! > "$absolutepath/.flowerIsRunning"
 		echo "Starting bridge in background"
 		echo "node $1 $2 2> trace.log 1> /dev/null &"
-		echo "$> ./bridge status"
+		echo "$> $absolutepath/bridge status"
 		installit
 	elif [ "$status" == 2 ]
 	then
-		node $1 $2 2> /home/pi/node-flower-bridge/trace.log 1> /dev/null &
-		echo $! > "/home/pi/node-flower-bridge/.flowerIsRunning"
+		node $1 $2 2> $absolutepath/trace.log 1> /dev/null &
+		echo $! > "$absolutepath/.flowerIsRunning"
 		echo "The bridge wakup"
 	fi
 }
@@ -133,7 +133,7 @@ restartit () {
 
 killit () {
 	kill $pid
-	rm -f "/home/pi/node-flower-bridge/.flowerIsRunning"
+	rm -f "$absolutepath/.flowerIsRunning"
 	echo "kill" $pid
 	pid=0
 }
@@ -142,10 +142,10 @@ installit () {
 	crontab -l | grep -n "node-flower-bridge\/bridge background$" > /dev/null
 	if [ "$?" == 1 ]
 	then
-		crontab -u pi -l > /home/pi/node-flower-bridge/mycron
-		echo "*/15 * * * * /home/pi/node-flower-bridge/bridge background" >> /home/pi/node-flower-bridge/mycron
-		crontab -u pi /home/pi/node-flower-bridge/mycron
-		rm /home/pi/node-flower-bridge/mycron
+		crontab -u pi -l > $absolutepath/mycron
+		echo "*/15 * * * * $absolutepath/bridge background" >> $absolutepath/mycron
+		crontab -u pi $absolutepath/mycron
+		rm $absolutepath/mycron
 	fi
 }
 
